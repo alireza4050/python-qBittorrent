@@ -9,7 +9,7 @@ except NameError:
 
 class Client(object):
 
-  def __init__(self, url):
+  def __init__(self, url, **kwargs):
     """QBittorrent Client
 
     Arguments:
@@ -19,6 +19,7 @@ class Client(object):
     if not url.endswith('/'):
         self.url += '/'
     self._session = None
+    self._kwargs = kwargs
 
     self._requests_log = logging.getLogger('requests.packages.urllib3')
     self._requests_log.setLevel(logging.DEBUG)
@@ -37,10 +38,10 @@ class Client(object):
     return self._session
 
   def _get(self, url, params=None):
-    return self._request(httpverb='get', url=url, params=params)
+    return self._request(httpverb='get', url=url, params=params, **self._kwargs)
 
   def _post(self, url, params=None, data=None):
-    return self._request(httpverb='post', url=url, params=params, data=data)
+    return self._request(httpverb='post', url=url, params=params, data=data, **self._kwargs)
 
   def _request(self, httpverb, url='', params=None, data=None):
     s = self._getSession()
