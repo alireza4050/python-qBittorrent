@@ -8,7 +8,7 @@ except NameError:
   basestring = str
 
 class Client(object):
-  
+
   def __init__(self, url):
     """QBittorrent Client
 
@@ -16,6 +16,8 @@ class Client(object):
     url -- URL to QBittorrent web api
     """
     self.url = url
+    if not url.endswith('/'):
+        self.url += '/'
     self._session = None
 
     self._requests_log = logging.getLogger('requests.packages.urllib3')
@@ -40,12 +42,9 @@ class Client(object):
   def _post(self, url, params=None, data=None):
     return self._request(httpverb='post', url=url, params=params, data=data)
 
-  def _request(self, httpverb, url=None, params=None, data=None):
+  def _request(self, httpverb, url='', params=None, data=None):
     s = self._getSession()
-
-    finalUrl = self.url
-    if url != None:
-      finalUrl = finalUrl + "/" + url
+    finalUrl = self.url + url
 
     if httpverb == "get" or httpverb == "GET":
       r = s.get(finalUrl, params=params, auth=self._auth)
@@ -59,7 +58,7 @@ class Client(object):
     obj = json.loads(r.text)
 
     r.close()
-    
+
     return obj
 
   def close(self):
@@ -101,7 +100,7 @@ class Client(object):
 
   def download(self, urls):
     """Download torrent from URL
-    
+
     Pass list of URLs as a list
     """
     urlString = "\n".join(urls)
@@ -111,18 +110,18 @@ class Client(object):
 
   def addTrackers(self, hash, trackers):
     """Add trackers to torrent
-    
+
     trackers can be a string or a list
     """
     trackersString = "\n".join(trackers)
     payload = {'hash': hash, 'trackers': trackersString}
-    
+
     self._post('command/addTrackers', data=payload)
 
   def pause(self, hash):
     """Pause torrent"""
     payload = {'hash': hash}
-    
+
     self._post('command/pause', data=payload)
 
   def pauseAll(self):
@@ -132,7 +131,7 @@ class Client(object):
   def resume(self, hash):
     """Resume torrent"""
     payload = {'hash': hash}
-    
+
     self._post('command/resume', data=payload)
 
   def resumeAll(self):
@@ -242,4 +241,3 @@ class Client(object):
     """Set preferences"""
     payload = {'json': json.dumps(kwargs)}
     self._post('command/setPreferences', data=payload)
-
